@@ -13,12 +13,12 @@
 
 
 GLuint shaderProgram;
-GLuint vbo, vao;
+GLuint vbo /*stores vertex data */, vao /*stiores the format of vertex data*/;
 
-glm::mat4 view_matrix;
-glm::mat4 ortho_matrix;
-glm::mat4 modelviewproject_matrix;
-GLuint uModelViewProjectMatrix;
+glm::mat4 view_matrix;/*transforamtionfor camera view*/
+glm::mat4 ortho_matrix; /*orthographic projection matrix*/
+glm::mat4 modelviewproject_matrix; /*  model*view*projection  */
+GLuint uModelViewProjectMatrix; /* uniform location for passing the matrix to vertex shader*/
 
 //-----------------------------------------------------------------
 
@@ -98,11 +98,11 @@ void initBuffersGL(void)
   std::string vertex_shader_file("02_vshader.glsl");
   std::string fragment_shader_file("02_fshader.glsl");
 
-  std::vector<GLuint> shaderList;
-  shaderList.push_back(csX75::LoadShaderGL(GL_VERTEX_SHADER, vertex_shader_file));
-  shaderList.push_back(csX75::LoadShaderGL(GL_FRAGMENT_SHADER, fragment_shader_file));
+  std::vector<GLuint> shaderList;//vector stores shader object ids retuend by opengl
+  shaderList.push_back(csX75::LoadShaderGL(GL_VERTEX_SHADER, vertex_shader_file));//loads vertex shader source code from the file creates a new shader object and compile and return the id
+  shaderList.push_back(csX75::LoadShaderGL(GL_FRAGMENT_SHADER, fragment_shader_file));//same but for fragment shader
 
-  shaderProgram = csX75::CreateProgramGL(shaderList);
+  shaderProgram = csX75::CreateProgramGL(shaderList);//creates a new pogram object and attatches all shaders in the shaders list so shaderes works together and then return the id
   glUseProgram( shaderProgram );
 
   // set up vertex arrays
@@ -117,13 +117,13 @@ void initBuffersGL(void)
 
 void renderGL(void)
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//clean screen
 
-  view_matrix = glm::lookAt(glm::vec3(0.0,0.0,-2.0),glm::vec3(0.0,0.0,0.0),glm::vec3(0.0,1.0,0.0));
+  view_matrix = glm::lookAt(glm::vec3(0.0,0.0,-2.0),glm::vec3(0.0,0.0,0.0),glm::vec3(0.0,1.0,0.0));//creates camera view transformation with camera position as first vector ; target second; up first
 
-  ortho_matrix = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, -20.0f, 20.0f);
-  modelviewproject_matrix = ortho_matrix * view_matrix;
-
+  ortho_matrix = glm::ortho(-2.0f, 2.0f, -2.0f, 2.0f, -20.0f, 20.0f);//Orthographic projection = no perspective distortion (parallel lines stay parallel).The parameters define the viewing box:
+  modelviewproject_matrix = ortho_matrix * view_matrix;// transforms vertices from object to clip space
+//Sends the MVP matrix to the shader (the vshader needs it to position vertices).
   glUniformMatrix4fv(uModelViewProjectMatrix, 1, GL_FALSE, glm::value_ptr(modelviewproject_matrix));
   // Draw 
   glDrawArrays(GL_TRIANGLES, 0, num_vertices);
